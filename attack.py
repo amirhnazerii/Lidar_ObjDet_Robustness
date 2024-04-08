@@ -625,12 +625,12 @@ def eval_one_epoch(cfg, model, dataloader, epoch_id, logger, args, dist_test=Fal
 
 def parse_config():
     parser = argparse.ArgumentParser(description='arg parser')
-    parser.add_argument('--cfg_file', type=str, default='tools/cfgs/kitti_models/pointrcnn.yaml', help='specify the config for training')
+    parser.add_argument('--cfg_file', type=str, default=None, help='specify the config for training')
 
     parser.add_argument('--batch_size', type=int, default=1, required=False, help='batch size for training')
     parser.add_argument('--workers', type=int, default=4, help='number of workers for dataloader')
     parser.add_argument('--extra_tag', type=str, default='default', help='extra tag for this experiment')
-    parser.add_argument('--ckpt', type=str, default='tools/pointrcnn_7870.pth', help='checkpoint to start from')
+    parser.add_argument('--ckpt', type=str, default=None, help='checkpoint to start from')
     parser.add_argument('--launcher', choices=['none', 'pytorch', 'slurm'], default='none')
     parser.add_argument('--tcp_port', type=int, default=18888, help='tcp port for distrbuted training')
     parser.add_argument('--local_rank', type=int, default=0, help='local rank for distributed training')
@@ -643,12 +643,12 @@ def parse_config():
     parser.add_argument('--ckpt_dir', type=str, default=None, help='specify a ckpt directory to be evaluated if needed')
     parser.add_argument('--save_to_file', action='store_true', default=True, help='')
 
-    parser.add_argument('--eps', type=float, default=0.1, help='max_shift default 0.03m')
-    parser.add_argument('--attack', type=str, default='FGSM', help='FGSM/PGD/MI')
+    parser.add_argument('--eps', type=float, default=0.03, help='max_shift default 0.03m')
+    parser.add_argument('--attack', type=str, default='PGD', help='FGSM/PGD/MI')
     parser.add_argument('--key', type=str, default='points', help='voxels/points')
     # parser.add_argument('--eval_all', action='store_true', default=False, help='whether to evaluate all checkpoints')
     parser.add_argument('--defense', action='store_true', default=False, help='')
-    parser.add_argument('--d_type', default='flip', type=str, help='flip/rotate/scale/gaussian/quantify/sample')
+    parser.add_argument('--d_type', default='', type=str, help='flip/rotate/scale/gaussian/quantify/sample')
     parser.add_argument('--save_points', action='store_true', default=True, help='')
 
     args = parser.parse_args()
@@ -721,7 +721,7 @@ def main():
     )
 
     model = build_network(model_cfg=cfg.MODEL, num_class=len(cfg.CLASS_NAMES), dataset=test_set)
-    print("Network building done")
+    
     # load checkpoint
     model.load_params_from_file(filename=args.ckpt, logger=logger, to_cpu=dist_test)
     model.cuda()
